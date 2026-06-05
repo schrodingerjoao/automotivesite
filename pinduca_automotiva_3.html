@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Pinduca Automotiva</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --bg:#0d0f14;--bg2:#13161e;--bg3:#1a1e28;--bg4:#1f2433;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --blue:#2b7fff;--blue-dim:rgba(43,127,255,0.13);
+  --red:#e5303a;--red-dim:rgba(229,48,58,0.13);
+  --gold:#f0a500;--gold-dim:rgba(240,165,0,0.13);
+  --green:#22c97e;--green-dim:rgba(34,201,126,0.13);
+  --purple:#7f77dd;--purple-dim:rgba(127,119,221,0.13);
+  --text:#eef0f5;--text2:#8b909e;--text3:#5a5f6e;
+  --r:12px;--rl:16px;
+  --bnav:64px;
+  --sab:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;-webkit-tap-highlight-color:transparent}
+.app{display:flex;flex-direction:column;height:100dvh}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:14px 16px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;padding-top:calc(14px + env(safe-area-inset-top,0px))}
+.logo-mark{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:20px;line-height:1}
+.logo-mark span{color:var(--blue)}
+.topbar-sub{font-size:11px;color:var(--text3);margin-top:1px}
+.live-badge{display:flex;align-items:center;gap:5px;background:var(--green-dim);color:var(--green);font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid rgba(34,201,126,0.2)}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.scroll-area{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:14px 14px calc(var(--bnav) + var(--sab) + 14px)}
+.section{display:none;animation:fadeUp .2s}
+.section.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:calc(var(--bnav) + var(--sab));background:var(--bg2);border-top:1px solid var(--border);display:flex;z-index:100;padding-bottom:var(--sab)}
+.nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--text3);transition:color .15s;position:relative;padding:8px 4px;-webkit-tap-highlight-color:transparent}
+.nav-tab i{font-size:22px}
+.nav-tab span{font-size:10px;font-weight:600;letter-spacing:.3px}
+.nav-tab.active{color:var(--blue)}
+.nav-tab.active::before{content:'';position:absolute;top:0;left:20%;right:20%;height:2px;background:var(--blue);border-radius:0 0 3px 3px}
+.nav-badge{position:absolute;top:6px;right:calc(50% - 18px);background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:20px;min-width:16px;text-align:center;border:1.5px solid var(--bg2)}
+.qa-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.qa-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:18px 12px;border-radius:var(--rl);border:1.5px solid transparent;font-family:'Barlow',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;text-align:center;min-height:90px;line-height:1.2;-webkit-tap-highlight-color:transparent}
+.qa-btn i{font-size:28px}
+.qa-btn:active{transform:scale(.96)}
+.qa-entrada{background:var(--blue-dim);border-color:rgba(43,127,255,.3);color:#6aaeff}
+.qa-finalizar{background:var(--green-dim);border-color:rgba(34,201,126,.3);color:var(--green)}
+.qa-status{background:var(--gold-dim);border-color:rgba(240,165,0,.3);color:var(--gold)}
+.qa-receita{background:var(--green-dim);border-color:rgba(34,201,126,.3);color:var(--green)}
+.qa-cliente{background:var(--purple-dim);border-color:rgba(127,119,221,.3);color:#b0abff}
+.qa-estoque{background:var(--gold-dim);border-color:rgba(240,165,0,.3);color:var(--gold)}
+.qa-func{background:var(--blue-dim);border-color:rgba(43,127,255,.3);color:#6aaeff}
+.qa-equip{background:var(--purple-dim);border-color:rgba(127,119,221,.3);color:#b0abff}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.metric-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:14px;position:relative;overflow:hidden}
+.metric-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent,var(--blue))}
+.metric-icon{width:36px;height:36px;border-radius:10px;background:var(--icon-bg,var(--blue-dim));display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--accent,var(--blue));margin-bottom:10px}
+.metric-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:2px}
+.metric-value{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:700;line-height:1}
+.metric-sub{font-size:10px;color:var(--text2);margin-top:4px}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:14px;margin-bottom:12px}
+.card-title{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;display:flex;align-items:center;gap:7px;margin-bottom:12px}
+.card-title i{color:var(--blue);font-size:17px}
+.sec-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.os-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px}
+.os-card-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.os-card-desc{font-size:11px;color:var(--text2);margin-top:3px}
+.pill{font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap;letter-spacing:.3px;text-transform:uppercase}
+.p-paint{background:rgba(43,127,255,.15);color:#6aaeff;border:1px solid rgba(43,127,255,.2)}
+.p-prep{background:rgba(240,165,0,.15);color:#f5c040;border:1px solid rgba(240,165,0,.2)}
+.p-polish{background:rgba(127,119,221,.15);color:#b0abff;border:1px solid rgba(127,119,221,.2)}
+.p-done{background:rgba(34,201,126,.15);color:#22c97e;border:1px solid rgba(34,201,126,.2)}
+.p-wait{background:rgba(138,144,158,.15);color:#8b909e;border:1px solid rgba(138,144,158,.2)}
+.p-funilaria{background:rgba(229,48,58,.15);color:#ff7070;border:1px solid rgba(229,48,58,.2)}
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -14px;padding:0 14px}
+.tbl{width:100%;border-collapse:collapse;font-size:12px;min-width:460px}
+.tbl th{text-align:left;color:var(--text3);font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;padding:5px 8px;border-bottom:1px solid var(--border);white-space:nowrap}
+.tbl td{padding:10px 8px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;font-weight:600}
+.form-input{background:var(--bg3);border:1.5px solid var(--border2);border-radius:var(--r);padding:13px 14px;color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;outline:none;width:100%;transition:border-color .15s;-webkit-appearance:none;appearance:none}
+.form-input:focus{border-color:var(--blue)}
+.form-input option{background:var(--bg3)}
+.chip-group{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.chip{padding:10px 16px;border-radius:var(--r);border:1.5px solid var(--border2);background:var(--bg3);color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;user-select:none;-webkit-tap-highlight-color:transparent}
+.chip:active{transform:scale(.96)}
+.chip.selected{border-color:var(--blue);background:var(--blue-dim);color:var(--blue);font-weight:600}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:13px 18px;border-radius:var(--r);border:1.5px solid var(--border2);background:var(--bg3);color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn-success{background:var(--green-dim);border-color:rgba(34,201,126,.3);color:var(--green)}
+.btn-danger{background:var(--red-dim);border-color:rgba(229,48,58,.3);color:var(--red)}
+.btn-sm{padding:8px 12px;font-size:12px}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.bar-label{font-size:12px;color:var(--text2);width:90px;text-align:right;flex-shrink:0}
+.bar-track{flex:1;background:var(--bg4);border-radius:4px;height:8px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .6s}
+.bar-pct{font-size:11px;color:var(--text3);width:44px;text-align:right;flex-shrink:0}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-ok{background:var(--green)}
+.dot-low{background:var(--gold)}
+.dot-crit{background:var(--red);animation:blink 1.5s infinite}
+.team-row{display:flex;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
+.team-row:last-child{border-bottom:none}
+.avail{font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;text-transform:uppercase;cursor:pointer}
+.av-on{background:var(--green-dim);color:var(--green)}
+.av-off{background:var(--red-dim);color:var(--red)}
+.av-part{background:var(--gold-dim);color:var(--gold)}
+.rating-item{padding:10px 0;border-bottom:1px solid var(--border)}
+.rating-item:last-child{border-bottom:none}
+.stars{color:var(--gold);font-size:14px}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}
+.modal-bg.show{display:flex;animation:fadeUp .18s}
+.modal{background:var(--bg2);width:100%;max-width:560px;max-height:92dvh;display:flex;flex-direction:column;border-radius:22px 22px 0 0;border-top:1px solid var(--border2);overflow:hidden;padding-bottom:env(safe-area-inset-bottom,0px)}
+.modal-handle{width:40px;height:4px;border-radius:2px;background:var(--border2);margin:12px auto 0;flex-shrink:0}
+.modal-header{padding:12px 18px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-title-text{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;display:flex;align-items:center;gap:8px}
+.modal-title-text i{color:var(--blue)}
+.modal-close{background:var(--bg3);border:none;color:var(--text2);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center}
+.modal-body{padding:0 18px 14px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:14px}
+.modal-footer{padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:10px;flex-shrink:0}
+.wizard-steps{display:flex;border-radius:var(--r);overflow:hidden;border:1px solid var(--border);margin-bottom:16px}
+.wizard-step{flex:1;padding:10px 4px;text-align:center;font-size:10px;font-weight:600;color:var(--text3);background:var(--bg3);border-right:1px solid var(--border);text-transform:uppercase;letter-spacing:.4px;transition:all .2s}
+.wizard-step:last-child{border-right:none}
+.wizard-step .sn{display:block;font-size:15px;font-family:'Barlow Condensed',sans-serif;font-weight:700;margin-bottom:1px}
+.wizard-step.active{background:var(--blue-dim);color:var(--blue)}
+.wizard-step.done{background:var(--green-dim);color:var(--green)}
+.step-panel{display:none}
+.step-panel.active{display:flex;flex-direction:column;gap:14px;animation:fadeUp .18s}
+.fin-os-item{background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--r);padding:14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .15s;margin-bottom:8px}
+.fin-os-item.selected{border-color:var(--green);background:var(--green-dim)}
+.fin-os-item:active{transform:scale(.98)}
+.empty{text-align:center;padding:32px 16px;color:var(--text3)}
+.empty i{font-size:40px;display:block;margin-bottom:8px;opacity:.3}
+.empty p{font-size:13px}
+.toast-wrap{position:fixed;bottom:calc(var(--bnav) + var(--sab) + 12px);left:16px;right:16px;z-index:500;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{display:flex;align-items:center;gap:10px;padding:13px 16px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rl);font-size:13px;color:var(--text);box-shadow:0 8px 30px rgba(0,0,0,.5);animation:fadeUp .25s}
+.toast i{font-size:20px;flex-shrink:0}
+.toast.success i{color:var(--green)}
+.toast.error i{color:var(--red)}
+.toast.info i{color:var(--blue)}
+@keyframes slideOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(12px)}}
+.chart-wrap{position:relative;width:100%}
+</style>
+</head>
+<body>
+<div class="toast-wrap" id="toast-wrap"></div>
+<div class="app">
+
+<header class="topbar">
+  <div>
+    <div class="logo-mark">PINDUCA<span>.</span></div>
+    <div class="topbar-sub" id="page-sub">Visão Geral</div>
+  </div>
+  <div class="live-badge"><span class="live-dot"></span>Ao vivo</div>
+</header>
+
+<div class="scroll-area" id="scroll-area">
+
+<!-- VISÃO GERAL -->
+<div class="section active" id="sec-visao">
+  <div class="sec-title">Ações rápidas</div>
+  <div class="qa-grid">
+    <button class="qa-btn qa-entrada"   onclick="openModal('modal-entrada')"><i class="ti ti-car"></i>Entrada de Veículo</button>
+    <button class="qa-btn qa-finalizar" onclick="openModal('modal-finalizar')"><i class="ti ti-circle-check"></i>Finalizar OS</button>
+    <button class="qa-btn qa-status"    onclick="openModal('modal-mudar-status')"><i class="ti ti-refresh"></i>Mudar Status</button>
+    <button class="qa-btn qa-receita"   onclick="openModal('modal-receita')"><i class="ti ti-cash"></i>Recebimento</button>
+  </div>
+  <div class="sec-title">Resumo</div>
+  <div class="metrics">
+    <div class="metric-card" style="--accent:var(--blue);--icon-bg:var(--blue-dim)">
+      <div class="metric-icon"><i class="ti ti-car"></i></div>
+      <div class="metric-label">Em serviço</div>
+      <div class="metric-value" id="mv-servico">0</div>
+      <div class="metric-sub">veículos ativos</div>
+    </div>
+    <div class="metric-card" style="--accent:var(--green);--icon-bg:var(--green-dim)">
+      <div class="metric-icon"><i class="ti ti-circle-check"></i></div>
+      <div class="metric-label">Finalizadas</div>
+      <div class="metric-value" id="mv-concluidas">0</div>
+      <div class="metric-sub">ordens</div>
+    </div>
+    <div class="metric-card" style="--accent:var(--gold);--icon-bg:var(--gold-dim)">
+      <div class="metric-icon"><i class="ti ti-cash"></i></div>
+      <div class="metric-label">Receita</div>
+      <div class="metric-value" id="mv-receita" style="font-size:18px">R$0</div>
+      <div class="metric-sub">total</div>
+    </div>
+    <div class="metric-card" style="--accent:var(--purple);--icon-bg:var(--purple-dim)">
+      <div class="metric-icon"><i class="ti ti-users"></i></div>
+      <div class="metric-label">Clientes</div>
+      <div class="metric-value" id="mv-clientes">0</div>
+      <div class="metric-sub">registrados</div>
+    </div>
+  </div>
+  <div class="sec-title">Veículos em andamento</div>
+  <div id="visao-lista"></div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-chart-donut"></i>Distribuição por status</div>
+    <div class="chart-wrap" style="height:160px"><canvas id="statusChart"></canvas></div>
+    <div id="status-legend" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;font-size:11px"></div>
+  </div>
+</div>
+
+<!-- SERVIÇOS -->
+<div class="section" id="sec-servicos">
+  <div class="qa-grid">
+    <button class="qa-btn qa-entrada"   onclick="openModal('modal-entrada')"><i class="ti ti-car"></i>Entrada de Veículo</button>
+    <button class="qa-btn qa-finalizar" onclick="openModal('modal-finalizar')"><i class="ti ti-circle-check"></i>Finalizar OS</button>
+    <button class="qa-btn qa-status"    onclick="openModal('modal-mudar-status')"><i class="ti ti-refresh"></i>Mudar Status</button>
+    <button class="qa-btn qa-receita"   onclick="openModal('modal-receita')"><i class="ti ti-cash"></i>Recebimento</button>
+  </div>
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px">
+      <div class="card-title" style="margin-bottom:0"><i class="ti ti-file-invoice"></i>Ordens de serviço</div>
+      <select class="form-input" id="filtro-status" style="width:auto;font-size:12px;padding:8px 10px" onchange="renderOS()">
+        <option value="">Todos</option>
+        <option>Em preparação</option><option>Em pintura</option>
+        <option>Em polimento</option><option>Aguardando</option><option>Finalizado</option>
+      </select>
+    </div>
+    <div class="tbl-wrap" id="os-table-wrap"></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-chart-bar"></i>Por categoria</div>
+    <div class="chart-wrap" style="height:180px"><canvas id="servChart"></canvas></div>
+  </div>
+</div>
+
+<!-- FINANCEIRO -->
+<div class="section" id="sec-financeiro">
+  <button class="qa-btn qa-receita" style="width:100%;flex-direction:row;min-height:70px;margin-bottom:16px;gap:12px" onclick="openModal('modal-receita')">
+    <i class="ti ti-cash" style="font-size:24px"></i>Registrar Recebimento
+  </button>
+  <div class="metrics">
+    <div class="metric-card" style="--accent:var(--blue);--icon-bg:var(--blue-dim)">
+      <div class="metric-icon"><i class="ti ti-trending-up"></i></div>
+      <div class="metric-label">Receita</div>
+      <div class="metric-value" id="fin-mv-receita" style="font-size:18px">R$0</div>
+    </div>
+    <div class="metric-card" style="--accent:var(--red);--icon-bg:var(--red-dim)">
+      <div class="metric-icon"><i class="ti ti-trending-down"></i></div>
+      <div class="metric-label">Custos</div>
+      <div class="metric-value" id="fin-mv-custo" style="font-size:18px">R$0</div>
+    </div>
+    <div class="metric-card" style="--accent:var(--green);--icon-bg:var(--green-dim)">
+      <div class="metric-icon"><i class="ti ti-cash"></i></div>
+      <div class="metric-label">Lucro</div>
+      <div class="metric-value" id="fin-mv-lucro" style="font-size:18px">R$0</div>
+    </div>
+    <div class="metric-card" style="--accent:var(--gold);--icon-bg:var(--gold-dim)">
+      <div class="metric-icon"><i class="ti ti-percent"></i></div>
+      <div class="metric-label">Margem</div>
+      <div class="metric-value" id="fin-mv-margem">—</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-receipt"></i>Extrato</div>
+    <div id="fin-lista"></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-chart-pie"></i>Custos por categoria</div>
+    <div id="fin-bar"></div>
+  </div>
+</div>
+
+<!-- CLIENTES -->
+<div class="section" id="sec-clientes">
+  <button class="qa-btn qa-cliente" style="width:100%;flex-direction:row;min-height:70px;margin-bottom:16px;gap:12px" onclick="openModal('modal-cliente')">
+    <i class="ti ti-user-plus" style="font-size:24px"></i>Novo Cliente
+  </button>
+  <div class="metrics">
+    <div class="metric-card" style="--accent:var(--blue);--icon-bg:var(--blue-dim)">
+      <div class="metric-icon"><i class="ti ti-users"></i></div>
+      <div class="metric-label">Total</div>
+      <div class="metric-value" id="cli-mv-total">0</div>
+    </div>
+    <div class="metric-card" style="--accent:var(--green);--icon-bg:var(--green-dim)">
+      <div class="metric-icon"><i class="ti ti-repeat"></i></div>
+      <div class="metric-label">Recorrentes</div>
+      <div class="metric-value" id="cli-mv-rec">0%</div>
+    </div>
+    <div class="metric-card" style="--accent:var(--gold);--icon-bg:var(--gold-dim);grid-column:span 2">
+      <div class="metric-icon"><i class="ti ti-star"></i></div>
+      <div class="metric-label">Satisfação média</div>
+      <div class="metric-value" id="cli-mv-aval">—</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-chart-pie"></i>Novos vs Recorrentes</div>
+    <div class="chart-wrap" style="height:150px"><canvas id="cliChart"></canvas></div>
+    <div id="cli-legend" style="display:flex;gap:14px;margin-top:10px;font-size:12px;justify-content:center"></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-message-star"></i>Avaliações</div>
+    <div id="cli-avaliacoes"></div>
+  </div>
+</div>
+
+<!-- RECURSOS -->
+<div class="section" id="sec-recursos">
+  <div class="qa-grid">
+    <button class="qa-btn qa-estoque" onclick="openModal('modal-estoque')"><i class="ti ti-package"></i>Atualizar Estoque</button>
+    <button class="qa-btn qa-func"    onclick="openModal('modal-funcionario')"><i class="ti ti-user-plus"></i>Add Funcionário</button>
+    <button class="qa-btn qa-equip"   onclick="openModal('modal-equipamento')"><i class="ti ti-tool"></i>Add Equipamento</button>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-bucket"></i>Estoque</div>
+    <div id="estoque-lista"></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-users"></i>Equipe</div>
+    <div id="func-lista"></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-tool"></i>Equipamentos</div>
+    <div id="equip-lista"></div>
+  </div>
+</div>
+
+</div><!-- /scroll-area -->
+
+<nav class="bottom-nav">
+  <div class="nav-tab active" onclick="switchTab('visao',this)"><i class="ti ti-layout-dashboard"></i><span>Início</span></div>
+  <div class="nav-tab" onclick="switchTab('servicos',this)">
+    <i class="ti ti-file-description"></i><span>Serviços</span>
+    <span class="nav-badge" id="badge-os" style="display:none">0</span>
+  </div>
+  <div class="nav-tab" onclick="switchTab('financeiro',this)"><i class="ti ti-chart-line"></i><span>Financeiro</span></div>
+  <div class="nav-tab" onclick="switchTab('clientes',this)"><i class="ti ti-users"></i><span>Clientes</span></div>
+  <div class="nav-tab" onclick="switchTab('recursos',this)">
+    <i class="ti ti-tool"></i><span>Recursos</span>
+    <span class="nav-badge" id="badge-rec" style="display:none;background:var(--gold)">!</span>
+  </div>
+</nav>
+</div>
+
+<!-- MODAL: ENTRADA DE VEÍCULO -->
+<div class="modal-bg" id="modal-entrada">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title-text"><i class="ti ti-car"></i>Entrada de Veículo</div>
+      <button class="modal-close" onclick="closeModal('modal-entrada')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="wizard-steps">
+        <div class="wizard-step active" id="ws-e1"><span class="sn">1</span>Veículo</div>
+        <div class="wizard-step" id="ws-e2"><span class="sn">2</span>Serviço</div>
+        <div class="wizard-step" id="ws-e3"><span class="sn">3</span>Confirmar</div>
+      </div>
+      <div class="step-panel active" id="sp-e1">
+        <div class="form-group">
+          <label class="form-label">Nome do cliente *</label>
+          <input class="form-input" id="e-cliente" placeholder="Ex: Carlos Mendonça" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Modelo do veículo *</label>
+          <input class="form-input" id="e-veiculo" placeholder="Ex: Honda Civic" autocomplete="off">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="form-group">
+            <label class="form-label">Placa</label>
+            <input class="form-input" id="e-placa" placeholder="ABC-1234" style="text-transform:uppercase" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Cor</label>
+            <input class="form-input" id="e-cor" placeholder="Ex: Branco" autocomplete="off">
+          </div>
+        </div>
+      </div>
+      <div class="step-panel" id="sp-e2">
+        <div class="form-group">
+          <label class="form-label">Tipo de serviço *</label>
+          <div class="chip-group" id="chips-tipo-entrada">
+            <div class="chip" onclick="selectChip(this,'chips-tipo-entrada')">Pintura completa</div>
+            <div class="chip" onclick="selectChip(this,'chips-tipo-entrada')">Retoque</div>
+            <div class="chip" onclick="selectChip(this,'chips-tipo-entrada')">Polimento</div>
+            <div class="chip" onclick="selectChip(this,'chips-tipo-entrada')">Funilaria</div>
+            <div class="chip" onclick="selectChip(this,'chips-tipo-entrada')">Funilaria + Pintura</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Valor estimado (R$)</label>
+          <input class="form-input" id="e-valor" type="number" inputmode="decimal" placeholder="Ex: 1500">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Data de entrada</label>
+          <input class="form-input" id="e-data" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Observações</label>
+          <input class="form-input" id="e-obs" placeholder="Ex: Amassado porta dianteira">
+        </div>
+      </div>
+      <div class="step-panel" id="sp-e3">
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px" id="entrada-confirm-box"></div>
+        <p style="font-size:12px;color:var(--text3);display:flex;align-items:center;gap:5px"><i class="ti ti-info-circle"></i>Status inicial: <strong style="color:var(--gold)">Em preparação</strong></p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" id="btn-e-back" style="display:none" onclick="entradaBack()"><i class="ti ti-arrow-left"></i></button>
+      <button class="btn btn-primary" id="btn-e-next" style="flex:1" onclick="entradaNext()">Próximo <i class="ti ti-arrow-right"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: FINALIZAR OS -->
+<div class="modal-bg" id="modal-finalizar">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title-text"><i class="ti ti-circle-check"></i>Finalizar OS</div>
+      <button class="modal-close" onclick="closeModal('modal-finalizar')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--text2)">Toque na OS concluída:</p>
+      <div id="finalizar-lista"></div>
+      <div class="form-group">
+        <label class="form-label">Valor final cobrado (R$)</label>
+        <input class="form-input" id="fin-valor-os" type="number" inputmode="decimal" placeholder="Deixe em branco para usar o estimado">
+        <span style="font-size:11px;color:var(--text3);display:flex;align-items:center;gap:4px;margin-top:4px"><i class="ti ti-info-circle"></i>Lançado automaticamente como receita</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-finalizar')" style="flex:1">Cancelar</button>
+      <button class="btn btn-success" onclick="confirmarFinalizar()" style="flex:2"><i class="ti ti-circle-check"></i>Finalizar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: MUDAR STATUS -->
+<div class="modal-bg" id="modal-mudar-status">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title-text"><i class="ti ti-refresh"></i>Mudar Status</div>
+      <button class="modal-close" onclick="closeModal('modal-mudar-status')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Selecione a OS</label>
+        <select class="form-input" id="ms-os-select" onchange="renderStatusChips()">
+          <option value="">— escolha —</option>
+        </select>
+      </div>
+      <div class="form-group" id="ms-chips-wrap" style="display:none">
+        <label class="form-label">Novo status</label>
+        <div class="chip-group" id="chips-status">
+          <div class="chip" onclick="selectChip(this,'chips-status')">Em preparação</div>
+          <div class="chip" onclick="selectChip(this,'chips-status')">Em pintura</div>
+          <div class="chip" onclick="selectChip(this,'chips-status')">Em polimento</div>
+          <div class="chip" onclick="selectChip(this,'chips-status')">Aguardando</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-mudar-status')" style="flex:1">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarMudarStatus()" style="flex:2"><i class="ti ti-check"></i>Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: RECEBIMENTO -->
+<div class="modal-bg" id="modal-receita">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title-text"><i class="ti ti-cash"></i>Recebimento</div>
+      <button class="modal-close" onclick="closeModal('modal-receita')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Origem</label>
+        <div class="chip-group" id="chips-receita-origem">
+          <div class="chip" onclick="selectChip(this,'chips-receita-origem');toggleReceitaOS()">Pagamento de OS</div>
+          <div class="chip" onclick="selectChip(this,'chips-receita-origem');toggleReceitaOS()">Adiantamento</div>
+          <div class="chip" onclick="selectChip(this,'chips-receita-origem');toggleReceitaOS()">Outro</div>
+        </div>
+      </div>
+      <div class="form-group" id="receita-os-group" style="display:none">
+        <label class="form-label">Vincular OS</label>
+        <select class="form-input" id="receita-os-select" onchange="preencherValorOS()">
+          <option value="">— selecione —</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Descrição *</label>
+        <input class="form-input" id="rec-desc" placeholder="Ex: Pintura Honda Civic">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Valor (R$) *</label>
+        <input class="form-input" id="rec-valor" type="number" inputmode="decimal" placeholder="0,00">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Forma de pagamento</label>
+        <div class="chip-group" id="chips-pgto">
+          <div class="chip" onclick="selectChip(this,'chips-pgto')">Pix</div>
+          <div class="chip" onclick="selectChip(this,'chips-pgto')">Dinheiro</div>
+          <div class="chip" onclick="selectChip(this,'chips-pgto')">Cartão</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Data</label>
+        <input class="form-input" id="rec-data" type="date">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-receita')" style="flex:1">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarReceita()" style="flex:2"><i class="ti ti-check"></i>Registrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: NOVO CLIENTE -->
+<div class="modal-bg" id="modal-cliente">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title-text"><i class="ti ti-user-plus"></i>Novo Cliente</div>
+      <button class="modal-close" onclick="closeModal('modal-cliente')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Nome *</label>
+        <input class="form-input" id="cli-nome" placeholder="Nome completo" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Telefone</label>
+        <input class="form-input" id="cli-tel" type="tel" placeholder="(21) 9 9999-0000">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tipo</label>
+        <div class="chip-group" id="chips-cli-tipo">
+          <div class="chip selected" onclick="selectChip(this,'chips-cli-tipo')">Novo</div>
+          <div class="chip" onclick="selectChip(this,'chips-cli-tipo')">Recorrente</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Avaliação</label>
+        <div class="chip-group" id="chips-aval">
+          <div class="chip" onclick="selectChip(this,'chips-aval')" data-val="1">★</div>
+          <div class="chip" onclick="selectChip(this,'chips-aval')" data-val="2">★★</div>
+          <div class="chip" onclick="selectChip(this,'chips-aval')" data-val="3">★★★</div>
+          <div class="chip" onclick="selectChip(this,'chips-aval')" data-val="4">★★★★</div>
+          <div class="chip selected" onclick="selectChip(this,'chips-aval')" data-val="5">★★★★★</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Comentário</label>
+        <input class="form-input" id="cli-comentario" placeholder="Opcional">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-cliente')" style="flex:1">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarCliente()" style="flex:2"><i class="ti ti-check"></i>Registrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ESTOQUE -->
+<div class="modal-bg" id="modal-estoque">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title-text"><i class="ti ti-package"></i>Estoque</div>
+      <button class="modal-close" onclick="closeModal('modal-estoque')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Material *</label>
+        <input class="form-input" id="est-nome" placeholder="Ex: Tinta base — Prata" list="est-sugestoes" autocomplete="off">
+        <datalist id="est-sugestoes">
+          <option value="Tinta base — Branco Perolado">
+          <option value="Tinta base — Prata Metálico">
+          <option value="Tinta base — Preto Fosco">
+          <option value="Verniz automotivo 2K">
+          <option value="Solvente thinner">
+          <option value="Primário epóxi">
+          <option value="Lixa 400"><option value="Lixa 600"><option value="Lixa 1200">
+          <option value="Massa plástica">
+          <option value="Fita crepe automotiva">
+        </datalist>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 90px;gap:10px">
+        <div class="form-group">
+          <label class="form-label">Quantidade *</label>
+          <input class="form-input" id="est-qtd" type="number" inputmode="decimal" min="0" step="0.1" placeholder="Ex: 5">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Unidade</label>
+          <select class="form-input" id="est-unid">
+            <option>L</option><option>kg</option><option>un</option><option>cx</option><option>m²</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Qtd. mínima (alerta)</label>
+        <input class="form-input" id="est-min" type="number" inputmode="decimal" min="0" step="0.1" placeholder="Ex: 2">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-estoque')" style="flex:1">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarEstoque()" style="flex:2"><i class="ti ti-check"></i>Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: FUNCIONÁRIO -->
+<div class="modal-bg" id="modal-funcionario">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title-text"><i class="ti ti-user-plus"></i>Funcionário</div>
+      <button class="modal-close" onclick="closeModal('modal-funcionario')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Nome e função *</label>
+        <input class="form-input" id="func-nome" placeholder="Ex: Ricardo (pintor sênior)">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Disponibilidade</label>
+        <div class="chip-group" id="chips-disp">
+          <div class="chip selected" onclick="selectChip(this,'chips-disp')">Disponível</div>
+          <div class="chip" onclick="selectChip(this,'chips-disp')">Parcial</div>
+          <div class="chip" onclick="selectChip(this,'chips-disp')">Folga</div>
+          <div class="chip" onclick="selectChip(this,'chips-disp')">Férias</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-funcionario')" style="flex:1">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarFuncionario()" style="flex:2"><i class="ti ti-check"></i>Adicionar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: EQUIPAMENTO -->
+<div class="modal-bg" id="modal-equipamento">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title-text"><i class="ti ti-tool"></i>Equipamento</div>
+      <button class="modal-close" onclick="closeModal('modal-equipamento')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Nome *</label>
+        <input class="form-input" id="equip-nome" placeholder="Ex: Cabine de pintura A">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <div class="chip-group" id="chips-equip-status">
+          <div class="chip selected" onclick="selectChip(this,'chips-equip-status')">OK</div>
+          <div class="chip" onclick="selectChip(this,'chips-equip-status')">Revisar</div>
+          <div class="chip" onclick="selectChip(this,'chips-equip-status')">Manutenção</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-equipamento')" style="flex:1">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarEquipamento()" style="flex:2"><i class="ti ti-check"></i>Adicionar</button>
+    </div>
+  </div>
+</div>
+<script>
+let S={os:[],financeiro:[],clientes:[],estoque:[],funcionarios:[],equipamentos:[],nextId:1};
+function save(){try{localStorage.setItem('pinduca_mob',JSON.stringify(S))}catch(e){}}
+function load(){try{const d=localStorage.getItem('pinduca_mob');if(d)S=JSON.parse(d)}catch(e){}}
+
+const fmtBRL=v=>'R$'+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtDate=d=>{if(!d)return'';const[y,m,day]=d.split('-');return`${day}/${m}/${y}`};
+const today=()=>new Date().toISOString().split('T')[0];
+const uid=()=>S.nextId++;
+const emptyEl=msg=>`<div class="empty"><i class="ti ti-inbox"></i><p>${msg}</p></div>`;
+const SP={'Em preparação':'p-prep','Em pintura':'p-paint','Em polimento':'p-polish','Aguardando':'p-wait','Finalizado':'p-done'};
+const TP={'Pintura completa':'p-paint','Retoque':'p-prep','Polimento':'p-polish','Funilaria':'p-funilaria','Funilaria + Pintura':'p-funilaria'};
+let _ch={};
+function destroyChart(id){if(_ch[id]){_ch[id].destroy();delete _ch[id]}}
+
+const PAGE_SUBS={visao:'Visão Geral',servicos:'Serviços',financeiro:'Financeiro',clientes:'Clientes',recursos:'Recursos'};
+function switchTab(id,el){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  if(el)el.classList.add('active');
+  document.getElementById('page-sub').textContent=PAGE_SUBS[id];
+  document.getElementById('scroll-area').scrollTop=0;
+}
+
+function openModal(id){
+  document.getElementById(id).classList.add('show');
+  if(id==='modal-finalizar')renderFinalizarLista();
+  if(id==='modal-mudar-status')populateMudarStatusSelect();
+  if(id==='modal-receita'){populateReceitaOS();document.getElementById('rec-data').value=today();}
+}
+function closeModal(id){document.getElementById(id).classList.remove('show')}
+document.querySelectorAll('.modal-bg').forEach(mb=>mb.addEventListener('click',e=>{if(e.target===mb)mb.classList.remove('show')}));
+
+function selectChip(el,gid){document.querySelectorAll('#'+gid+' .chip').forEach(c=>c.classList.remove('selected'));el.classList.add('selected')}
+function getChip(gid){const s=document.querySelector('#'+gid+' .chip.selected');return s?s.dataset.val||s.textContent.trim():null}
+
+function toast(msg,type='success'){
+  const icons={success:'ti-circle-check',error:'ti-circle-x',info:'ti-info-circle'};
+  const el=document.createElement('div');
+  el.className='toast '+type;
+  el.innerHTML='<i class="ti '+icons[type]+'"></i><span>'+msg+'</span>';
+  document.getElementById('toast-wrap').appendChild(el);
+  setTimeout(()=>{el.style.animation='slideOut .25s forwards';setTimeout(()=>el.remove(),250)},3000);
+}
+
+// WIZARD ENTRADA
+let entradaStep=1;
+function entradaNext(){
+  if(entradaStep===1){
+    if(!document.getElementById('e-cliente').value.trim()||!document.getElementById('e-veiculo').value.trim()){toast('Preencha cliente e veículo.','error');return}
+    goEntradaStep(2);
+  }else if(entradaStep===2){
+    if(!getChip('chips-tipo-entrada')){toast('Selecione o tipo de serviço.','error');return}
+    updateEntradaConfirm();goEntradaStep(3);
+    document.getElementById('btn-e-next').innerHTML='<i class="ti ti-circle-check"></i>Confirmar entrada';
+  }else{
+    const tipo=getChip('chips-tipo-entrada');
+    S.os.push({id:uid(),cliente:document.getElementById('e-cliente').value.trim(),veiculo:document.getElementById('e-veiculo').value.trim(),placa:document.getElementById('e-placa').value.trim().toUpperCase(),cor:document.getElementById('e-cor').value.trim(),tipo,valor:Number(document.getElementById('e-valor').value)||0,data:document.getElementById('e-data').value||today(),obs:document.getElementById('e-obs').value.trim(),status:'Em preparação'});
+    save();renderAll();toast(document.getElementById('e-veiculo').value.trim()+' registrado!');
+    closeModal('modal-entrada');resetEntrada();
+  }
+}
+function entradaBack(){goEntradaStep(entradaStep-1);if(entradaStep===2)document.getElementById('btn-e-next').innerHTML='Próximo <i class="ti ti-arrow-right"></i>'}
+function goEntradaStep(n){
+  [1,2,3].forEach(i=>{
+    document.getElementById('sp-e'+i).classList.toggle('active',i===n);
+    const ws=document.getElementById('ws-e'+i);
+    ws.classList.toggle('active',i===n);ws.classList.toggle('done',i<n);
+  });
+  document.getElementById('btn-e-back').style.display=n>1?'inline-flex':'none';
+  entradaStep=n;
+}
+function resetEntrada(){
+  ['e-cliente','e-veiculo','e-placa','e-cor','e-valor','e-obs'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('e-data').value=today();
+  document.querySelectorAll('#chips-tipo-entrada .chip').forEach(c=>c.classList.remove('selected'));
+  goEntradaStep(1);document.getElementById('btn-e-next').innerHTML='Próximo <i class="ti ti-arrow-right"></i>';
+}
+function updateEntradaConfirm(){
+  const tipo=getChip('chips-tipo-entrada')||'—';
+  const cli=document.getElementById('e-cliente').value||'—';
+  const vei=document.getElementById('e-veiculo').value||'—';
+  const pla=document.getElementById('e-placa').value||'';
+  const val=document.getElementById('e-valor').value;
+  document.getElementById('entrada-confirm-box').innerHTML=row('Cliente',cli)+row('Veículo',vei+(pla?' — '+pla.toUpperCase():''))+row('Serviço',tipo)+row('Valor',val?fmtBRL(Number(val)):'—')+row('Entrada',fmtDate(document.getElementById('e-data').value||today()))+row('Status','<span class="pill p-prep">Em preparação</span>');
+}
+function row(l,v){return'<div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text3)">'+l+'</span><span style="font-weight:600">'+v+'</span></div>'}
+
+// FINALIZAR
+let finSel=null;
+function renderFinalizarLista(){
+  finSel=null;document.getElementById('fin-valor-os').value='';
+  const ativos=S.os.filter(o=>o.status!=='Finalizado');
+  const w=document.getElementById('finalizar-lista');
+  if(!ativos.length){w.innerHTML=emptyEl('Nenhuma OS ativa');return}
+  w.innerHTML=ativos.map(o=>'<div class="fin-os-item" id="fc-'+o.id+'" onclick="selecionarFinalizar('+o.id+')"><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+o.cliente+' — '+o.veiculo+'</div><div style="font-size:11px;color:var(--text2);margin-top:3px">'+o.tipo+' · '+fmtDate(o.data)+'</div></div><span class="pill '+(SP[o.status]||'p-wait')+'">'+o.status+'</span></div>').join('');
+}
+function selecionarFinalizar(id){
+  finSel=id;
+  document.querySelectorAll('.fin-os-item').forEach(el=>el.classList.remove('selected'));
+  document.getElementById('fc-'+id)?.classList.add('selected');
+  const os=S.os.find(o=>o.id===id);if(os?.valor)document.getElementById('fin-valor-os').value=os.valor;
+}
+function confirmarFinalizar(){
+  if(!finSel){toast('Selecione uma OS.','error');return}
+  const os=S.os.find(o=>o.id===finSel);if(!os)return;
+  const vf=Number(document.getElementById('fin-valor-os').value)||os.valor||0;
+  os.status='Finalizado';os.valorFinal=vf;
+  if(vf>0)S.financeiro.push({id:uid(),desc:os.tipo+' — '+os.cliente,tipo:'receita',cat:'Serviço',valor:vf,data:today()});
+  save();renderAll();toast('OS de '+os.cliente+' finalizada!');closeModal('modal-finalizar');
+}
+
+// MUDAR STATUS
+function populateMudarStatusSelect(){
+  const sel=document.getElementById('ms-os-select');
+  sel.innerHTML='<option value="">— escolha —</option>'+S.os.filter(o=>o.status!=='Finalizado').map(o=>'<option value="'+o.id+'">'+o.cliente+' — '+o.veiculo+'</option>').join('');
+  document.getElementById('ms-chips-wrap').style.display='none';
+}
+function renderStatusChips(){
+  const id=Number(document.getElementById('ms-os-select').value);
+  const wrap=document.getElementById('ms-chips-wrap');
+  if(!id){wrap.style.display='none';return}
+  wrap.style.display='block';
+  const os=S.os.find(o=>o.id===id);
+  document.querySelectorAll('#chips-status .chip').forEach(c=>c.classList.toggle('selected',c.textContent.trim()===os?.status));
+}
+function salvarMudarStatus(){
+  const id=Number(document.getElementById('ms-os-select').value);
+  const status=getChip('chips-status');
+  if(!id||!status){toast('Selecione OS e status.','error');return}
+  const os=S.os.find(o=>o.id===id);
+  if(os){os.status=status;save();renderAll();toast('Status: "'+status+'"');closeModal('modal-mudar-status')}
+}
+
+// RECEITA
+function populateReceitaOS(){
+  const sel=document.getElementById('receita-os-select');
+  sel.innerHTML='<option value="">— selecione —</option>'+S.os.map(o=>'<option value="'+o.id+'" data-val="'+o.valor+'">'+o.cliente+' — '+o.veiculo+'</option>').join('');
+}
+function toggleReceitaOS(){document.getElementById('receita-os-group').style.display=getChip('chips-receita-origem')==='Pagamento de OS'?'flex':'none'}
+function preencherValorOS(){
+  const sel=document.getElementById('receita-os-select');
+  const opt=sel.options[sel.selectedIndex];
+  if(opt?.dataset.val)document.getElementById('rec-valor').value=opt.dataset.val;
+  const os=S.os.find(o=>o.id===Number(sel.value));
+  if(os)document.getElementById('rec-desc').value=os.tipo+' — '+os.cliente;
+}
+function salvarReceita(){
+  const desc=document.getElementById('rec-desc').value.trim();
+  const valor=Number(document.getElementById('rec-valor').value);
+  if(!desc||!valor){toast('Preencha descrição e valor.','error');return}
+  const pgto=getChip('chips-pgto')||'';
+  S.financeiro.push({id:uid(),desc:desc+(pgto?' ('+pgto+')':''),tipo:'receita',cat:'Serviço',valor,data:document.getElementById('rec-data').value||today()});
+  save();renderAll();toast(fmtBRL(valor)+' registrado!');closeModal('modal-receita');
+  document.getElementById('rec-desc').value='';document.getElementById('rec-valor').value='';
+  document.querySelectorAll('#chips-receita-origem .chip,#chips-pgto .chip').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('receita-os-group').style.display='none';
+}
+
+// CLIENTE
+function salvarCliente(){
+  const nome=document.getElementById('cli-nome').value.trim();if(!nome){toast('Informe o nome.','error');return}
+  S.clientes.push({id:uid(),nome,tel:document.getElementById('cli-tel').value.trim(),tipo:getChip('chips-cli-tipo')||'Novo',aval:Number(getChip('chips-aval'))||5,comentario:document.getElementById('cli-comentario').value.trim(),data:today()});
+  save();renderAll();toast(nome+' registrado!');closeModal('modal-cliente');
+  ['cli-nome','cli-tel','cli-comentario'].forEach(id=>document.getElementById(id).value='');
+}
+
+// ESTOQUE
+function salvarEstoque(){
+  const nome=document.getElementById('est-nome').value.trim();const qtd=Number(document.getElementById('est-qtd').value);
+  if(!nome||qtd<0){toast('Preencha nome e quantidade.','error');return}
+  const exist=S.estoque.find(e=>e.nome.toLowerCase()===nome.toLowerCase());
+  if(exist){exist.qtd=qtd;exist.min=Number(document.getElementById('est-min').value)||0}
+  else S.estoque.push({id:uid(),nome,qtd,unid:document.getElementById('est-unid').value,min:Number(document.getElementById('est-min').value)||0});
+  save();renderAll();toast(nome+' atualizado!');closeModal('modal-estoque');
+  ['est-nome','est-qtd','est-min'].forEach(id=>document.getElementById(id).value='');
+}
+
+// FUNCIONÁRIO
+function salvarFuncionario(){
+  const nome=document.getElementById('func-nome').value.trim();if(!nome)return;
+  S.funcionarios.push({id:uid(),nome,disp:getChip('chips-disp')||'Disponível'});
+  save();renderAll();toast(nome+' adicionado!');closeModal('modal-funcionario');document.getElementById('func-nome').value='';
+}
+function toggleDisp(id){
+  const f=S.funcionarios.find(f=>f.id===id);if(!f)return;
+  const opts=['Disponível','Parcial','Folga','Férias'];f.disp=opts[(opts.indexOf(f.disp)+1)%opts.length];save();renderAll();
+}
+
+// EQUIPAMENTO
+function salvarEquipamento(){
+  const nome=document.getElementById('equip-nome').value.trim();if(!nome)return;
+  S.equipamentos.push({id:uid(),nome,status:getChip('chips-equip-status')||'OK'});
+  save();renderAll();toast(nome+' adicionado!');closeModal('modal-equipamento');document.getElementById('equip-nome').value='';
+}
+function toggleEquipStatus(id){
+  const e=S.equipamentos.find(e=>e.id===id);if(!e)return;
+  const opts=['OK','Revisar','Manutenção'];e.status=opts[(opts.indexOf(e.status)+1)%opts.length];save();renderAll();
+}
+
+// DELETE
+function delOS(id){if(!confirm('Remover?'))return;S.os=S.os.filter(o=>o.id!==id);save();renderAll()}
+function delFin(id){S.financeiro=S.financeiro.filter(f=>f.id!==id);save();renderAll()}
+function delCli(id){S.clientes=S.clientes.filter(c=>c.id!==id);save();renderAll()}
+function delEst(id){S.estoque=S.estoque.filter(e=>e.id!==id);save();renderAll()}
+function delFunc(id){S.funcionarios=S.funcionarios.filter(f=>f.id!==id);save();renderAll()}
+function delEquip(id){S.equipamentos=S.equipamentos.filter(e=>e.id!==id);save();renderAll()}
+
+// RENDER ALL
+function renderAll(){renderVisao();renderOS();renderServChart();renderFinanceiro();renderClientes();renderRecursos()}
+
+function renderVisao(){
+  const ativos=S.os.filter(o=>o.status!=='Finalizado');
+  const receita=S.financeiro.filter(f=>f.tipo==='receita').reduce((a,f)=>a+Number(f.valor),0);
+  document.getElementById('mv-servico').textContent=ativos.length;
+  document.getElementById('mv-concluidas').textContent=S.os.filter(o=>o.status==='Finalizado').length;
+  document.getElementById('mv-receita').textContent=fmtBRL(receita);
+  document.getElementById('mv-clientes').textContent=S.clientes.length;
+  const badge=document.getElementById('badge-os');badge.textContent=ativos.length;badge.style.display=ativos.length?'inline':'none';
+  const lista=document.getElementById('visao-lista');
+  if(!ativos.length){lista.innerHTML=emptyEl('Nenhum veículo ativo. Toque em "Entrada de Veículo".')}
+  else lista.innerHTML=ativos.slice(0,6).map(o=>'<div class="os-card"><div style="flex:1;min-width:0"><div class="os-card-name">'+o.veiculo+(o.placa?' — '+o.placa:'')+'</div><div class="os-card-desc">'+o.cliente+' · '+o.tipo+' · '+fmtDate(o.data)+'</div></div><span class="pill '+(SP[o.status]||'p-wait')+'">'+o.status+'</span></div>').join('');
+  const sL=['Em preparação','Em pintura','Em polimento','Aguardando','Finalizado'];
+  const sC=['#f0a500','#2b7fff','#7f77dd','#8b909e','#22c97e'];
+  const counts=sL.map(l=>S.os.filter(o=>o.status===l).length);
+  destroyChart('statusChart');
+  if(S.os.length)_ch['statusChart']=new Chart(document.getElementById('statusChart'),{type:'doughnut',data:{labels:sL,datasets:[{data:counts,backgroundColor:sC,borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:{display:false}}}});
+  document.getElementById('status-legend').innerHTML=sL.map((l,i)=>'<span style="display:flex;align-items:center;gap:4px;color:var(--text2)"><span style="width:8px;height:8px;border-radius:2px;background:'+sC[i]+';display:inline-block"></span>'+l+' ('+counts[i]+')</span>').join('');
+}
+
+function renderOS(){
+  const filtro=document.getElementById('filtro-status')?.value||'';
+  const lista=filtro?S.os.filter(o=>o.status===filtro):S.os;
+  const w=document.getElementById('os-table-wrap');if(!w)return;
+  if(!lista.length){w.innerHTML=emptyEl('Nenhuma OS. Toque em "Entrada de Veículo".');return}
+  w.innerHTML='<table class="tbl"><thead><tr><th>Cliente</th><th>Veículo</th><th>Tipo</th><th>Valor</th><th>Status</th><th></th></tr></thead><tbody>'+lista.map(o=>'<tr><td>'+o.cliente+'</td><td>'+o.veiculo+(o.placa?' <small style="color:var(--text3)">'+o.placa+'</small>':'')+'</td><td><span class="pill '+(TP[o.tipo]||'p-wait')+'">'+o.tipo+'</span></td><td style="color:var(--green)">'+(o.valor>0?fmtBRL(o.valor):'—')+'</td><td><span class="pill '+(SP[o.status]||'p-wait')+'">'+o.status+'</span></td><td><button class="btn btn-danger btn-sm" onclick="delOS('+o.id+')"><i class="ti ti-trash"></i></button></td></tr>').join('')+'</tbody></table>';
+}
+
+function renderServChart(){
+  const tipos=['Pintura completa','Retoque','Polimento','Funilaria','Funilaria + Pintura'];
+  destroyChart('servChart');
+  const el=document.getElementById('servChart');if(!el)return;
+  _ch['servChart']=new Chart(el,{type:'bar',data:{labels:tipos,datasets:[{data:tipos.map(t=>S.os.filter(o=>o.tipo===t).length),backgroundColor:['#f0a500','#2b7fff','#7f77dd','#e5303a','#c42030'],borderWidth:0,borderRadius:5,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{color:'#5a5f6e',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#5a5f6e',stepSize:1}}}}});
+}
+
+function renderFinanceiro(){
+  const receita=S.financeiro.filter(f=>f.tipo==='receita').reduce((a,f)=>a+Number(f.valor),0);
+  const custo=S.financeiro.filter(f=>f.tipo==='custo').reduce((a,f)=>a+Number(f.valor),0);
+  const lucro=receita-custo;
+  document.getElementById('fin-mv-receita').textContent=fmtBRL(receita);
+  document.getElementById('fin-mv-custo').textContent=fmtBRL(custo);
+  const lEl=document.getElementById('fin-mv-lucro');lEl.textContent=fmtBRL(lucro);lEl.style.color=lucro>=0?'var(--green)':'var(--red)';
+  document.getElementById('fin-mv-margem').textContent=receita>0?((lucro/receita)*100).toFixed(1)+'%':'—';
+  const lista=document.getElementById('fin-lista');if(!lista)return;
+  if(!S.financeiro.length){lista.innerHTML=emptyEl('Nenhum lançamento ainda.');return}
+  lista.innerHTML=[...S.financeiro].sort((a,b)=>(b.data||'').localeCompare(a.data||'')).map(f=>'<div style="display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--border)"><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+f.desc+'</div><div style="font-size:11px;color:var(--text3)">'+(f.cat||'')+' · '+fmtDate(f.data)+'</div></div><span style="font-size:13px;font-weight:700;color:'+(f.tipo==='receita'?'var(--green)':'var(--red)')+';flex-shrink:0">'+(f.tipo==='receita'?'+':'-')+fmtBRL(Number(f.valor))+'</span><button class="btn btn-danger btn-sm" onclick="delFin('+f.id+')" style="padding:6px 8px"><i class="ti ti-trash"></i></button></div>').join('');
+  const catMap={};S.financeiro.filter(f=>f.tipo==='custo').forEach(f=>{catMap[f.cat]=(catMap[f.cat]||0)+Number(f.valor)});
+  const keys=Object.keys(catMap).sort((a,b)=>catMap[b]-catMap[a]);
+  const fb=document.getElementById('fin-bar');if(!fb)return;
+  if(!keys.length){fb.innerHTML=emptyEl('Nenhum custo lançado.');return}
+  const maxV=catMap[keys[0]];
+  const cc=['#2b7fff','#1a5fcf','#7f77dd','#e5303a','#f0a500','#22c97e','#5a5f6e'];
+  fb.innerHTML=keys.map((k,i)=>'<div class="bar-row"><span class="bar-label">'+k+'</span><div class="bar-track"><div class="bar-fill" style="width:'+Math.round((catMap[k]/maxV)*100)+'%;background:'+cc[i%cc.length]+'"></div></div><span class="bar-pct">'+fmtBRL(catMap[k])+'</span></div>').join('');
+}
+
+function renderClientes(){
+  const total=S.clientes.length,rec=S.clientes.filter(c=>c.tipo==='Recorrente').length;
+  document.getElementById('cli-mv-total').textContent=total;
+  document.getElementById('cli-mv-rec').textContent=total?Math.round((rec/total)*100)+'%':'0%';
+  const ma=total?(S.clientes.reduce((a,c)=>a+Number(c.aval),0)/total).toFixed(1):'—';
+  document.getElementById('cli-mv-aval').textContent=ma!=='—'?ma+' / 5':'—';
+  destroyChart('cliChart');
+  const ctx=document.getElementById('cliChart');
+  if(ctx&&total)_ch['cliChart']=new Chart(ctx,{type:'doughnut',data:{labels:['Novos','Recorrentes'],datasets:[{data:[total-rec,rec],backgroundColor:['#2b7fff','#22c97e'],borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false}}}});
+  document.getElementById('cli-legend').innerHTML='<span style="display:flex;align-items:center;gap:4px;color:var(--text2)"><span style="width:8px;height:8px;border-radius:2px;background:#2b7fff;display:inline-block"></span>Novos ('+(total-rec)+')</span><span style="display:flex;align-items:center;gap:4px;color:var(--text2)"><span style="width:8px;height:8px;border-radius:2px;background:#22c97e;display:inline-block"></span>Recorrentes ('+rec+')</span>';
+  const av=document.getElementById('cli-avaliacoes');if(!av)return;
+  if(!S.clientes.length){av.innerHTML=emptyEl('Nenhum cliente registrado.');return}
+  av.innerHTML=[...S.clientes].reverse().slice(0,6).map(c=>'<div class="rating-item"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px"><span style="font-size:14px;font-weight:600">'+c.nome+' <span style="font-size:10px;color:var(--text3)">('+c.tipo+')</span></span><div style="display:flex;align-items:center;gap:7px"><span class="stars">'+'★'.repeat(Number(c.aval))+'<span style="color:var(--text3)">'+'★'.repeat(5-Number(c.aval))+'</span></span><button class="btn btn-danger btn-sm" onclick="delCli('+c.id+')" style="padding:6px 8px"><i class="ti ti-trash"></i></button></div></div>'+(c.comentario?'<div style="font-size:12px;color:var(--text2)">'+c.comentario+'</div>':'')+'</div>').join('');
+}
+
+function renderRecursos(){
+  const est=S.estoque;
+  const crit=est.filter(e=>e.min>0&&Number(e.qtd)<=Number(e.min)).length;
+  document.getElementById('badge-rec').style.display=crit?'inline':'none';
+  const el=document.getElementById('estoque-lista');if(!el)return;
+  if(!est.length){el.innerHTML=emptyEl('Toque em "Atualizar Estoque" para adicionar.')}
+  else el.innerHTML='<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Material</th><th>Qtd</th><th>Min</th><th></th><th></th></tr></thead><tbody>'+est.map(e=>{const nivel=e.min>0&&Number(e.qtd)<=Number(e.min)?'crit':e.min>0&&Number(e.qtd)<=Number(e.min)*2?'low':'ok';const bc=nivel==='crit'?'#e5303a':nivel==='low'?'#f0a500':'#2b7fff';const pct=e.min>0?Math.min(100,Math.round((Number(e.qtd)/(Number(e.min)*3||1))*100)):60;return'<tr><td style="font-weight:500">'+e.nome+'</td><td>'+e.qtd+' '+e.unid+'</td><td style="color:var(--text3)">'+(e.min>0?e.min:'—')+'</td><td><div style="display:flex;align-items:center;gap:5px"><div style="width:40px;background:var(--bg4);border-radius:3px;height:5px;overflow:hidden"><div style="width:'+pct+'%;height:100%;border-radius:3px;background:'+bc+'"></div></div><span class="dot dot-'+nivel+'"></span></div></td><td><button class="btn btn-danger btn-sm" onclick="delEst('+e.id+')" style="padding:6px 8px"><i class="ti ti-trash"></i></button></td></tr>'}).join('')+'</tbody></table></div>';
+  const dc={Disponível:'av-on',Parcial:'av-part',Folga:'av-off',Férias:'av-off'};
+  const fl=document.getElementById('func-lista');if(!fl)return;
+  fl.innerHTML=S.funcionarios.length?S.funcionarios.map(f=>'<div class="team-row"><div style="flex:1;font-size:14px;display:flex;align-items:center;gap:8px"><i class="ti ti-user-circle" style="color:var(--text3);font-size:18px"></i>'+f.nome+'</div><span class="avail '+(dc[f.disp]||'av-off')+'" onclick="toggleDisp('+f.id+')">'+f.disp+'</span><button class="btn btn-danger btn-sm" style="margin-left:8px;padding:6px 8px" onclick="delFunc('+f.id+')"><i class="ti ti-trash"></i></button></div>').join(''):emptyEl('Nenhum funcionário.');
+  const sc={OK:'av-on',Revisar:'av-part',Manutenção:'av-off'};
+  const eql=document.getElementById('equip-lista');if(!eql)return;
+  eql.innerHTML=S.equipamentos.length?S.equipamentos.map(e=>'<div class="team-row"><div style="flex:1;font-size:14px;display:flex;align-items:center;gap:8px"><i class="ti ti-tool" style="color:var(--text3);font-size:18px"></i>'+e.nome+'</div><span class="avail '+(sc[e.status]||'av-off')+'" onclick="toggleEquipStatus('+e.id+')">'+e.status+'</span><button class="btn btn-danger btn-sm" style="margin-left:8px;padding:6px 8px" onclick="delEquip('+e.id+')"><i class="ti ti-trash"></i></button></div>').join(''):emptyEl('Nenhum equipamento.');
+}
+
+load();
+document.getElementById('e-data').value=today();
+document.getElementById('rec-data').value=today();
+renderAll();
+</script>
+</body>
+</html>

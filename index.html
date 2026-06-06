@@ -147,6 +147,40 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .toast.info i{color:var(--blue)}
 @keyframes slideOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(12px)}}
 .chart-wrap{position:relative;width:100%}
+
+/* ── SEARCH BAR ── */
+.search-bar{display:flex;align-items:center;gap:10px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:var(--r);padding:11px 14px;margin-bottom:14px}
+.search-bar i{color:var(--text3);font-size:18px;flex-shrink:0}
+.search-bar input{background:none;border:none;outline:none;color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;flex:1}
+.search-bar input::placeholder{color:var(--text3)}
+
+/* ── PERIOD FILTER ── */
+.period-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.period-tab{padding:8px 16px;border-radius:var(--r);border:1.5px solid var(--border2);background:var(--bg3);color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.period-tab.active{background:var(--blue-dim);border-color:rgba(43,127,255,.4);color:var(--blue)}
+.period-tab:active{transform:scale(.97)}
+.period-custom{display:none;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.period-custom.show{display:flex}
+
+/* ── RECIBO MODAL ── */
+.recibo-paper{background:#fff;color:#111;border-radius:var(--r);padding:20px;font-family:'Barlow',sans-serif}
+.recibo-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;padding-bottom:14px;border-bottom:2px solid #111}
+.recibo-logo{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px;color:#111}
+.recibo-logo span{color:#2b7fff}
+.recibo-title{font-size:12px;color:#666;text-align:right}
+.recibo-title strong{display:block;font-size:16px;color:#111;font-family:'Barlow Condensed',sans-serif;font-weight:700}
+.recibo-row{display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid #eee}
+.recibo-row:last-child{border-bottom:none}
+.recibo-row span:first-child{color:#666}
+.recibo-row span:last-child{font-weight:600;color:#111}
+.recibo-total{display:flex;justify-content:space-between;font-size:16px;font-weight:700;padding:12px 0 0;margin-top:8px;border-top:2px solid #111}
+.recibo-footer{margin-top:14px;padding-top:10px;border-top:1px dashed #ccc;font-size:11px;color:#999;text-align:center}
+@media print{
+  body *{visibility:hidden}
+  #recibo-printable,#recibo-printable *{visibility:visible}
+  #recibo-printable{position:fixed;top:0;left:0;width:100%;padding:20px;background:#fff}
+  .modal-bg,.bottom-nav,.topbar{display:none!important}
+}
 </style>
 </head>
 <body>
@@ -219,12 +253,13 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
   <div class="card">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px">
       <div class="card-title" style="margin-bottom:0"><i class="ti ti-file-invoice"></i>Ordens de serviço</div>
-      <select class="form-input" id="filtro-status" style="width:auto;font-size:12px;padding:8px 10px" onchange="renderOS()">
+      <select class="form-input" id="filtro-status" style="width:auto;font-size:12px;padding:8px 10px" onchange="renderOSComBusca()">
         <option value="">Todos</option>
         <option>Em preparação</option><option>Em pintura</option>
         <option>Em polimento</option><option>Aguardando</option><option>Finalizado</option>
       </select>
     </div>
+    <div class="search-bar"><i class="ti ti-search"></i><input id="busca-os" placeholder="Buscar por cliente, veículo ou placa..." oninput="renderOSComBusca()"></div>
     <div class="tbl-wrap" id="os-table-wrap"></div>
   </div>
   <div class="card">
@@ -238,6 +273,17 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
   <button class="qa-btn qa-receita" style="width:100%;flex-direction:row;min-height:70px;margin-bottom:16px;gap:12px" onclick="openModal('modal-receita')">
     <i class="ti ti-cash" style="font-size:24px"></i>Registrar Recebimento
   </button>
+  <div class="period-tabs">
+    <div class="period-tab" data-p="hoje" onclick="setPeriodo('hoje')">Hoje</div>
+    <div class="period-tab" data-p="semana" onclick="setPeriodo('semana')">Semana</div>
+    <div class="period-tab active" data-p="mes" onclick="setPeriodo('mes')">Mês</div>
+    <div class="period-tab" data-p="todos" onclick="setPeriodo('todos')">Tudo</div>
+    <div class="period-tab" data-p="custom" onclick="setPeriodo('custom')">Período</div>
+  </div>
+  <div class="period-custom" id="periodo-custom">
+    <div class="form-group" style="flex:1"><label class="form-label">De</label><input class="form-input" id="periodo-de" type="date" onchange="renderFinanceiro()"></div>
+    <div class="form-group" style="flex:1"><label class="form-label">Até</label><input class="form-input" id="periodo-ate" type="date" onchange="renderFinanceiro()"></div>
+  </div>
   <div class="metrics">
     <div class="metric-card" style="--accent:var(--blue);--icon-bg:var(--blue-dim)">
       <div class="metric-icon"><i class="ti ti-trending-up"></i></div>
@@ -298,7 +344,8 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
     <div id="cli-legend" style="display:flex;gap:14px;margin-top:10px;font-size:12px;justify-content:center"></div>
   </div>
   <div class="card">
-    <div class="card-title"><i class="ti ti-message-star"></i>Avaliações</div>
+    <div class="card-title"><i class="ti ti-message-star"></i>Avaliações e clientes</div>
+    <div class="search-bar"><i class="ti ti-search"></i><input id="busca-cli" placeholder="Buscar por nome ou telefone..." oninput="renderCliComBusca()"></div>
     <div id="cli-avaliacoes"></div>
   </div>
 </div>
@@ -901,7 +948,8 @@ function renderVisao(){
   document.getElementById('status-legend').innerHTML=sL.map((l,i)=>'<span style="display:flex;align-items:center;gap:4px;color:var(--text2)"><span style="width:8px;height:8px;border-radius:2px;background:'+sC[i]+';display:inline-block"></span>'+l+' ('+counts[i]+')</span>').join('');
 }
 
-function renderOS(){
+function renderOS(){renderOSComBusca()}
+function _renderOS(){
   const filtro=document.getElementById('filtro-status')?.value||'';
   const lista=filtro?S.os.filter(o=>o.status===filtro):S.os;
   const w=document.getElementById('os-table-wrap');if(!w)return;
@@ -917,17 +965,18 @@ function renderServChart(){
 }
 
 function renderFinanceiro(){
-  const receita=S.financeiro.filter(f=>f.tipo==='receita').reduce((a,f)=>a+Number(f.valor),0);
-  const custo=S.financeiro.filter(f=>f.tipo==='custo').reduce((a,f)=>a+Number(f.valor),0);
+  const finFiltrado=filtrarFinanceiroPorPeriodo(S.financeiro);
+  const receita=finFiltrado.filter(f=>f.tipo==='receita').reduce((a,f)=>a+Number(f.valor),0);
+  const custo=finFiltrado.filter(f=>f.tipo==='custo').reduce((a,f)=>a+Number(f.valor),0);
   const lucro=receita-custo;
   document.getElementById('fin-mv-receita').textContent=fmtBRL(receita);
   document.getElementById('fin-mv-custo').textContent=fmtBRL(custo);
   const lEl=document.getElementById('fin-mv-lucro');lEl.textContent=fmtBRL(lucro);lEl.style.color=lucro>=0?'var(--green)':'var(--red)';
   document.getElementById('fin-mv-margem').textContent=receita>0?((lucro/receita)*100).toFixed(1)+'%':'—';
   const lista=document.getElementById('fin-lista');if(!lista)return;
-  if(!S.financeiro.length){lista.innerHTML=emptyEl('Nenhum lançamento ainda.');return}
-  lista.innerHTML=[...S.financeiro].sort((a,b)=>(b.data||'').localeCompare(a.data||'')).map(f=>'<div style="display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--border)"><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+f.desc+'</div><div style="font-size:11px;color:var(--text3)">'+(f.cat||'')+' · '+fmtDate(f.data)+'</div></div><span style="font-size:13px;font-weight:700;color:'+(f.tipo==='receita'?'var(--green)':'var(--red)')+';flex-shrink:0">'+(f.tipo==='receita'?'+':'-')+fmtBRL(Number(f.valor))+'</span><button class="btn btn-danger btn-sm" onclick="delFin('+f.id+')" style="padding:6px 8px"><i class="ti ti-trash"></i></button></div>').join('');
-  const catMap={};S.financeiro.filter(f=>f.tipo==='custo').forEach(f=>{catMap[f.cat]=(catMap[f.cat]||0)+Number(f.valor)});
+  if(!finFiltrado.length){lista.innerHTML=emptyEl('Nenhum lançamento neste período.');return}
+  lista.innerHTML=[...finFiltrado].sort((a,b)=>(b.data||'').localeCompare(a.data||'')).map(f=>'<div style="display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--border)"><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+f.desc+'</div><div style="font-size:11px;color:var(--text3)">'+(f.cat||'')+' · '+fmtDate(f.data)+'</div></div><span style="font-size:13px;font-weight:700;color:'+(f.tipo==='receita'?'var(--green)':'var(--red)')+';flex-shrink:0">'+(f.tipo==='receita'?'+':'-')+fmtBRL(Number(f.valor))+'</span><button class="btn btn-danger btn-sm" onclick="delFin('+f.id+')" style="padding:6px 8px"><i class="ti ti-trash"></i></button></div>').join('');
+  const catMap={};finFiltrado.filter(f=>f.tipo==='custo').forEach(f=>{catMap[f.cat]=(catMap[f.cat]||0)+Number(f.valor)});
   const keys=Object.keys(catMap).sort((a,b)=>catMap[b]-catMap[a]);
   const fb=document.getElementById('fin-bar');if(!fb)return;
   if(!keys.length){fb.innerHTML=emptyEl('Nenhum custo lançado.');return}
@@ -946,11 +995,8 @@ function renderClientes(){
   const ctx=document.getElementById('cliChart');
   if(ctx&&total)_ch['cliChart']=new Chart(ctx,{type:'doughnut',data:{labels:['Novos','Recorrentes'],datasets:[{data:[total-rec,rec],backgroundColor:['#2b7fff','#22c97e'],borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false}}}});
   document.getElementById('cli-legend').innerHTML='<span style="display:flex;align-items:center;gap:4px;color:var(--text2)"><span style="width:8px;height:8px;border-radius:2px;background:#2b7fff;display:inline-block"></span>Novos ('+(total-rec)+')</span><span style="display:flex;align-items:center;gap:4px;color:var(--text2)"><span style="width:8px;height:8px;border-radius:2px;background:#22c97e;display:inline-block"></span>Recorrentes ('+rec+')</span>';
-  const av=document.getElementById('cli-avaliacoes');if(!av)return;
-  if(!S.clientes.length){av.innerHTML=emptyEl('Nenhum cliente registrado.');return}
-  av.innerHTML=[...S.clientes].reverse().slice(0,6).map(c=>'<div class="rating-item"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px"><span style="font-size:14px;font-weight:600">'+c.nome+' <span style="font-size:10px;color:var(--text3)">('+c.tipo+')</span></span><div style="display:flex;align-items:center;gap:7px"><span class="stars">'+'★'.repeat(Number(c.aval))+'<span style="color:var(--text3)">'+'★'.repeat(5-Number(c.aval))+'</span></span><button class="btn btn-danger btn-sm" onclick="delCli('+c.id+')" style="padding:6px 8px"><i class="ti ti-trash"></i></button></div></div>'+(c.comentario?'<div style="font-size:12px;color:var(--text2)">'+c.comentario+'</div>':'')+'</div>').join('');
+  renderCliComBusca();
 }
-
 function renderRecursos(){
   const est=S.estoque;
   const crit=est.filter(e=>e.min>0&&Number(e.qtd)<=Number(e.min)).length;
@@ -966,10 +1012,129 @@ function renderRecursos(){
   eql.innerHTML=S.equipamentos.length?S.equipamentos.map(e=>'<div class="team-row"><div style="flex:1;font-size:14px;display:flex;align-items:center;gap:8px"><i class="ti ti-tool" style="color:var(--text3);font-size:18px"></i>'+e.nome+'</div><span class="avail '+(sc[e.status]||'av-off')+'" onclick="toggleEquipStatus('+e.id+')">'+e.status+'</span><button class="btn btn-danger btn-sm" style="margin-left:8px;padding:6px 8px" onclick="delEquip('+e.id+')"><i class="ti ti-trash"></i></button></div>').join(''):emptyEl('Nenhum equipamento.');
 }
 
+
+// ══════════════════════════════════
+// BUSCA
+// ══════════════════════════════════
+function renderOSComBusca(){
+  const busca=(document.getElementById('busca-os')?.value||'').toLowerCase().trim();
+  const filtro=document.getElementById('filtro-status')?.value||'';
+  let lista=S.os;
+  if(filtro)lista=lista.filter(o=>o.status===filtro);
+  if(busca)lista=lista.filter(o=>(o.cliente+o.veiculo+o.placa+o.tipo).toLowerCase().includes(busca));
+  const w=document.getElementById('os-table-wrap');if(!w)return;
+  if(!lista.length){w.innerHTML=emptyEl('Nenhuma OS encontrada.');return}
+  w.innerHTML='<table class="tbl"><thead><tr><th>Cliente</th><th>Veículo</th><th>Tipo</th><th>Valor</th><th>Status</th><th></th></tr></thead><tbody>'+lista.map(o=>'<tr><td>'+o.cliente+'</td><td>'+o.veiculo+(o.placa?' <small style="color:var(--text3)">'+o.placa+'</small>':'')+'</td><td><span class="pill '+(TP[o.tipo]||'p-wait')+'">'+o.tipo+'</span></td><td style="color:var(--green)">'+(o.valor>0?fmtBRL(o.valor):'—')+'</td><td><span class="pill '+(SP[o.status]||'p-wait')+'">'+o.status+'</span></td><td style="display:flex;gap:4px"><button class="btn btn-sm" onclick="abrirRecibo('+o.id+')" title="Comprovante" style="padding:6px 8px;color:var(--blue)"><i class="ti ti-file-invoice"></i></button><button class="btn btn-danger btn-sm" onclick="delOS('+o.id+')" style="padding:6px 8px"><i class="ti ti-trash"></i></button></td></tr>').join('')+'</tbody></table>';
+}
+
+function renderCliComBusca(){
+  const busca=(document.getElementById('busca-cli')?.value||'').toLowerCase().trim();
+  const av=document.getElementById('cli-avaliacoes');if(!av)return;
+  let lista=[...S.clientes].reverse();
+  if(busca)lista=lista.filter(c=>(c.nome+c.tel+c.tipo).toLowerCase().includes(busca));
+  if(!lista.length){av.innerHTML=emptyEl('Nenhum cliente encontrado.');return}
+  av.innerHTML=lista.slice(0,20).map(c=>'<div class="rating-item"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px"><span style="font-size:14px;font-weight:600">'+c.nome+' <span style="font-size:10px;color:var(--text3)">('+c.tipo+')</span></span><div style="display:flex;align-items:center;gap:7px"><span class="stars">'+'★'.repeat(Number(c.aval))+'<span style="color:var(--text3)">'+'★'.repeat(5-Number(c.aval))+'</span></span><button class="btn btn-danger btn-sm" onclick="delCli('+c.id+')" style="padding:6px 8px"><i class="ti ti-trash"></i></button></div></div>'+(c.comentario?'<div style="font-size:12px;color:var(--text2)">'+c.comentario+'</div>':'')+'</div>').join('');
+}
+
+// ══════════════════════════════════
+// RECIBO
+// ══════════════════════════════════
+function abrirRecibo(id){
+  const os=S.os.find(o=>o.id===id);if(!os)return;
+  const valor=os.valorFinal||os.valor||0;
+  const num='OS-'+String(os.id).padStart(4,'0');
+  document.getElementById('recibo-content').innerHTML=`
+    <div class="recibo-header">
+      <div>
+        <div class="recibo-logo">PINDUCA<span>.</span></div>
+        <div style="font-size:11px;color:#666;margin-top:2px">Oficina Automotiva</div>
+      </div>
+      <div class="recibo-title">
+        <strong>ORDEM DE SERVIÇO</strong>
+        ${num}<br>
+        <span style="font-size:11px">${fmtDate(os.data)}</span>
+      </div>
+    </div>
+    <div style="margin-bottom:14px">
+      <div class="recibo-row"><span>Cliente</span><span>${os.cliente}</span></div>
+      <div class="recibo-row"><span>Veículo</span><span>${os.veiculo}${os.placa?' — '+os.placa:''}</span></div>
+      ${os.cor?'<div class="recibo-row"><span>Cor</span><span>'+os.cor+'</span></div>':''}
+      <div class="recibo-row"><span>Serviço</span><span>${os.tipo}</span></div>
+      <div class="recibo-row"><span>Data entrada</span><span>${fmtDate(os.data)}</span></div>
+      <div class="recibo-row"><span>Status</span><span>${os.status}</span></div>
+      ${os.obs?'<div class="recibo-row"><span>Obs.</span><span style="max-width:55%;text-align:right">'+os.obs+'</span></div>':''}
+    </div>
+    <div class="recibo-total"><span>Total</span><span>${fmtBRL(valor)}</span></div>
+    <div class="recibo-footer">
+      Obrigado pela preferência!<br>
+      Pinduca Automotiva — Qualidade em pintura automotiva
+    </div>`;
+  openModal('modal-recibo');
+}
+
+function imprimirRecibo(){
+  window.print();
+}
+
+// ══════════════════════════════════
+// FILTRO POR PERÍODO (Financeiro)
+// ══════════════════════════════════
+let periodoAtivo='mes';
+
+function setPeriodo(p){
+  periodoAtivo=p;
+  document.querySelectorAll('.period-tab').forEach(t=>t.classList.toggle('active',t.dataset.p===p));
+  const custom=document.getElementById('periodo-custom');
+  if(custom)custom.classList.toggle('show',p==='custom');
+  renderFinanceiro();
+}
+
+function filtrarFinanceiroPorPeriodo(lista){
+  const hoje=new Date();hoje.setHours(0,0,0,0);
+  if(periodoAtivo==='hoje'){
+    const t=today();return lista.filter(f=>f.data===t);
+  }
+  if(periodoAtivo==='semana'){
+    const d=new Date(hoje);d.setDate(d.getDate()-d.getDay());
+    return lista.filter(f=>{const fd=new Date(f.data+'T00:00:00');return fd>=d&&fd<=hoje});
+  }
+  if(periodoAtivo==='mes'){
+    const m=hoje.getMonth(),y=hoje.getFullYear();
+    return lista.filter(f=>{const fd=new Date(f.data+'T00:00:00');return fd.getMonth()===m&&fd.getFullYear()===y});
+  }
+  if(periodoAtivo==='custom'){
+    const de=document.getElementById('periodo-de')?.value;
+    const ate=document.getElementById('periodo-ate')?.value||today();
+    if(!de)return lista;
+    return lista.filter(f=>f.data>=de&&f.data<=ate);
+  }
+  return lista;
+}
+
 load();
 document.getElementById('e-data').value=today();
 document.getElementById('rec-data').value=today();
 renderAll();
 </script>
+
+<!-- MODAL: RECIBO OS -->
+<div class="modal-bg" id="modal-recibo">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title-text"><i class="ti ti-file-invoice"></i>Comprovante da OS</div>
+      <button class="modal-close" onclick="closeModal('modal-recibo')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div id="recibo-printable">
+        <div class="recibo-paper" id="recibo-content"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-recibo')" style="flex:1">Fechar</button>
+      <button class="btn btn-primary" onclick="imprimirRecibo()" style="flex:2"><i class="ti ti-printer"></i>Imprimir / PDF</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
